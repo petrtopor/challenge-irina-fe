@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { parse } from 'papaparse'
 import { NGrid, NGridItem, NCard, NTabs, NTabPane, NSpace, NLayout, NLayoutHeader, NLayoutContent } from 'naive-ui'
 
@@ -24,6 +24,10 @@ const onFileChange = ({target}) => {
   const file = target.files[0]
   parse(file, parseConfig)
 }
+
+const axisOptions = computed(() => (parsedData.value && parsedData.value[1]?.map((text, value) => ({ text, value }))) ?? [])
+const xAxisOptionSelected = ref()
+const yAxisOptionSelected = ref()
 </script>
 
 <template>
@@ -58,7 +62,35 @@ const onFileChange = ({target}) => {
                 <n-layout>
                   <n-layout-header>График</n-layout-header>
                   <n-layout-content content-style="padding: 24px;">
-                    Всё, что касается графика.
+                    <n-grid cols="1 240:2">
+                      <n-grid-item>
+                        <label for="x-axis-select">Выберите ось х:</label>
+                        <select :disabled="!axisOptions.length" id="x-axis-select" v-model="xAxisOptionSelected">
+                          <option
+                            v-for="(xAxisOption, xAxisOptionIndex) in axisOptions"
+                            :key="`x-axis-option-${xAxisOptionIndex}`"
+                            :value="xAxisOption.value">
+                            {{ xAxisOption.text }}
+                          </option>
+                        </select>
+                      </n-grid-item>
+                      <n-grid-item>
+                        <label for="y-axis-select">Выберите ось у:</label>
+                        <select :disabled="!axisOptions.length" id="x-axis-select" v-model="yAxisOptionSelected">
+                          <option
+                            v-for="(yAxisOption, yAxisOptionIndex) in axisOptions"
+                            :key="`y-axis-option-${yAxisOptionIndex}`"
+                            :value="yAxisOption.value">
+                            {{ yAxisOption.text }}
+                          </option>
+                        </select>
+                      </n-grid-item>
+                    </n-grid>
+                    <n-grid cols="1">
+                      <n-grid-item>
+                        <canvas id="chartCanvas" />
+                      </n-grid-item>
+                    </n-grid>
                   </n-layout-content>
                 </n-layout>
               </n-space>
