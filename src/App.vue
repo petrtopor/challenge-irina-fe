@@ -1,6 +1,29 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { parse } from 'papaparse'
 import { NGrid, NGridItem, NCard, NTabs, NTabPane, NSpace, NLayout, NLayoutHeader, NLayoutContent } from 'naive-ui'
 
+const parsedData = ref()
+const parseConfig = {
+  "delimiter": "",
+  "header": false,
+  "dynamicTyping": false,
+  "skipEmptyLines": false,
+  "preview": 0,
+  "encoding": "",
+  "worker": false,
+  "comments": "",
+  "download": false,
+  "transform": false,
+  complete: results => {
+    parsedData.value = results.data
+  }
+}
+
+const onFileChange = ({target}) => {
+  const file = target.files[0]
+  parse(file, parseConfig)
+}
 </script>
 
 <template>
@@ -16,6 +39,7 @@ import { NGrid, NGridItem, NCard, NTabs, NTabPane, NSpace, NLayout, NLayoutHeade
           <n-tabs type="line" animated>
             <n-tab-pane name="upload" tab="upload">
               Загрузить файл
+              <input type="file" @change="onFileChange" placeholder="Select the .csv-file" accept=".csv" />
             </n-tab-pane>
             <n-tab-pane name="text" tab="text">
               Вставить текст
