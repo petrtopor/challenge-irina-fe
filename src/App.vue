@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// @ts-nocheck
 import { ref, computed, watch } from 'vue'
 import { parse } from 'papaparse'
 import Chart from 'chart.js/auto'
@@ -28,12 +29,13 @@ const parseConfig = {
   comments: '',
   download: false,
   transform: false,
-  complete: (results) => {
-    parsedData.value = results.data
+  complete: ({data}: {data: []}) => {
+    parsedData.value = data
   }
 }
 
-const onFileChange = ({ target }) => {
+const onFileChange = ({ target }: { target: HTMLInputElement }) => {
+  if(!target.files) return
   const file = target.files[0]
   parse(file, parseConfig)
 }
