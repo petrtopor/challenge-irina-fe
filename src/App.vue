@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { parse } from 'papaparse'
 import Chart from 'chart.js/auto'
-import { NGrid, NGridItem, NCard, NTabs, NTabPane, NSpace, NLayout, NLayoutHeader, NLayoutContent } from 'naive-ui'
+import { NGrid, NGridItem, NCard, NTabs, NTabPane, NSpace, NLayout, NLayoutHeader, NLayoutContent, NSelect, NDataTable } from 'naive-ui'
 
 const parsedData = ref()
 const parseConfig = {
@@ -75,6 +75,24 @@ watch(axisOptionsSelected, (value)=>{
     plotChart()
   }
 })
+
+const columns = computed(() =>
+  (parsedData.value && parsedData.value[1]?.map((text, textIndex) =>
+    ({ title: text, key: textIndex }))) ?? []
+)
+const columnsOptions = computed(() =>
+  columns.value.length && columns.value.map(({ title, key }) =>
+    ({ label: title, value: key }))
+)
+
+const columnsSelected = ref([0, 1, 2, 3])
+const columnsTable = computed(() => columns.value.length && columns.value.filter(column => columnsSelected.value.includes(column.key)))
+
+const tableData = computed(() =>
+  (parsedData.value && parsedData.value.slice(2).map(row =>
+    row.reduce((obj, val, idx) =>
+      ({ ...obj, [idx]: val }), {}))
+  ) ?? [])
 </script>
 
 <template>
@@ -147,7 +165,23 @@ watch(axisOptionsSelected, (value)=>{
                 <n-layout>
                   <n-layout-header>Таблица</n-layout-header>
                   <n-layout-content content-style="padding: 24px;">
-                    Всё, что касается таблицы.
+                    <n-grid cols="1">
+                      <n-grid-item>
+                        <n-select v-model:value="columnsSelected" multiple :options="columnsOptions" />
+                      </n-grid-item>
+                    </n-grid>
+                    <n-grid cols="1">
+                      <n-grid-item>
+                        <n-data-table
+                          v-if="columns.length"
+                          :columns="columnsTable"
+                          :data="tableData"
+                          :bordered="false"
+                          :max-height="480"
+                          virtual-scroll
+                        />
+                      </n-grid-item>
+                    </n-grid>
                   </n-layout-content>
                 </n-layout>
               </n-space>
