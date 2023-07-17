@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { parse } from 'papaparse'
+import Chart from 'chart.js/auto'
 import { NGrid, NGridItem, NCard, NTabs, NTabPane, NSpace, NLayout, NLayoutHeader, NLayoutContent } from 'naive-ui'
 
 const parsedData = ref()
@@ -28,6 +29,52 @@ const onFileChange = ({target}) => {
 const axisOptions = computed(() => (parsedData.value && parsedData.value[1]?.map((text, value) => ({ text, value }))) ?? [])
 const xAxisOptionSelected = ref()
 const yAxisOptionSelected = ref()
+
+const labels = computed(()=>parsedData.value?.slice(2, -1).map(row => row[xAxisOptionSelected.value]))
+const datasetData = computed(()=>parsedData.value?.slice(2, -1).map(row => parseFloat(row[yAxisOptionSelected.value])))
+let chart
+const plotChart = () => {
+  const ctx = document.getElementById('chartCanvas').getContext('2d')
+
+  if(chart) {
+    chart.destroy()
+  }
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.value,
+      datasets: [{
+        label: axisOptions.value[xAxisOptionSelected.value].text,
+        data: datasetData.value,
+        fill: false,
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        title: {
+          display: true,
+          text: `${axisOptions.value[yAxisOptionSelected.value].text} Chart`
+        }
+      }
+    }
+  })
+}
+
+const axisOptionsSelected = computed(()=>xAxisOptionSelected.value&&yAxisOptionSelected.value)
+watch(axisOptionsSelected, (value)=>{
+  if(!value || !datasetData.value || !labels.value) {
+    console.log("REMOVE CHART")
+  } else {
+    console.log("DRAW CHART")
+    plotChart()
+  }
+})
 </script>
 
 <template>
